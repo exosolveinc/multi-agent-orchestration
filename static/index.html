@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Orchestrator | Multi-Agent AI System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --bg-card: #15151f;
+            --border: #2a2a3a;
+            --text-primary: #f0f0f5;
+            --text-secondary: #a0a0b0;
+            --text-muted: #606070;
+            --accent-research: #00d4aa;
+            --accent-analysis: #7c3aed;
+            --accent-critic: #f59e0b;
+            --accent-supervisor: #3b82f6;
+            --accent-glow: rgba(0, 212, 170, 0.15);
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 212, 170, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-research), var(--accent-supervisor));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-research));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Agent Pills */
+        .agent-pills {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .agent-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .agent-pill:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .agent-pill .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .agent-pill.supervisor .dot { background: var(--accent-supervisor); }
+        .agent-pill.research .dot { background: var(--accent-research); }
+        .agent-pill.analysis .dot { background: var(--accent-analysis); }
+        .agent-pill.critic .dot { background: var(--accent-critic); }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 2rem;
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Input Section */
+        .input-section {
+            margin-bottom: 2rem;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            padding-right: 120px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            resize: none;
+            min-height: 100px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-research);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 12px;
+            bottom: 12px;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--accent-research), #00b894);
+            border: none;
+            border-radius: 8px;
+            color: var(--bg-primary);
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 212, 170, 0.4);
+        }
+
+        .search-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Options */
+        .options-row {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .option-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .option-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle.active {
+            background: var(--accent-research);
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle.active::after {
+            transform: translateX(20px);
+        }
+
+        select {
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--accent-research);
+        }
+
+        /* Pipeline Visualization */
+        .pipeline {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .pipeline-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .pipeline-step::before {
+            content: '';
+            position: absolute;
+            left: 28px;
+            top: 100%;
+            width: 2px;
+            height: 1rem;
+            background: var(--border);
+        }
+
+        .pipeline-step:last-child::before {
+            display: none;
+        }
+
+        .pipeline-step.active {
+            border-color: var(--accent-research);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .pipeline-step.completed {
+            border-color: var(--success);
+        }
+
+        .pipeline-step.error {
+            border-color: var(--error);
+        }
+
+        .step-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .step-icon.supervisor { background: rgba(59, 130, 246, 0.2); color: var(--accent-supervisor); }
+        .step-icon.research { background: rgba(0, 212, 170, 0.2); color: var(--accent-research); }
+        .step-icon.analysis { background: rgba(124, 58, 237, 0.2); color: var(--accent-analysis); }
+        .step-icon.critic { background: rgba(245, 158, 11, 0.2); color: var(--accent-critic); }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .step-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .step-status {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+        }
+
+        .step-status.running {
+            background: rgba(0, 212, 170, 0.2);
+            color: var(--accent-research);
+            animation: pulse 1.5s infinite;
+        }
+
+        .step-status.completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .step-status.error {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+        }
+
+        /* Results Panel */
+        .results-panel {
+            min-height: 500px;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Result Content */
+        .result-content {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .result-section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .result-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .result-section h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--accent-research);
+        }
+
+        /* Styled Lists */
+        .styled-list {
+            margin: 0;
+            padding-left: 1.5rem;
+            list-style: none;
+        }
+
+        .styled-list li {
+            position: relative;
+            padding: 0.5rem 0;
+            padding-left: 1rem;
+            line-height: 1.6;
+            border-left: 2px solid var(--border);
+            margin-bottom: 0.25rem;
+        }
+
+        .styled-list li:hover {
+            border-left-color: var(--accent-research);
+            background: rgba(0, 212, 170, 0.05);
+        }
+
+        /* Patterns */
+        .patterns-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .pattern-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .pattern-card strong {
+            color: var(--accent-analysis);
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .pattern-significance {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+        }
+
+        .pattern-evidence {
+            margin: 0.5rem 0 0 1rem;
+            padding: 0;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .pattern-evidence li {
+            padding: 0.25rem 0;
+        }
+
+        /* Themes */
+        .themes-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .theme-tag {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(124, 58, 237, 0.1));
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            color: var(--accent-analysis);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Data Points */
+        .data-points-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .data-point {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .data-metric {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent-research);
+        }
+
+        .data-source {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Gaps & Recommendations */
+        .gaps-list li {
+            border-left-color: var(--warning);
+        }
+
+        .recommendations-list li {
+            border-left-color: var(--accent-research);
+        }
+
+        /* Sources */
+        .sources-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .source-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        .source-item:hover {
+            border-color: var(--accent-research);
+            transform: translateX(4px);
+        }
+
+        .source-item a {
+            color: var(--text-primary);
+            text-decoration: none;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .source-item a:hover {
+            color: var(--accent-research);
+        }
+
+        .relevance-badge {
+            background: var(--accent-research);
+            color: var(--bg-primary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 1rem;
+        }
+
+        /* Agent Pipeline */
+        .agents-section {
+            margin-top: 1rem;
+        }
+
+        .agents-flow {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .agent-badge {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+
+        .flow-arrow {
+            color: var(--accent-research);
+            font-size: 1.25rem;
+        }
+
+        /* Confidence Meter */
+        .confidence-meter {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .confidence-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .confidence-fill.high { background: var(--success); }
+        .confidence-fill.medium { background: var(--warning); }
+        .confidence-fill.low { background: var(--error); }
+
+        .confidence-value {
+            font-weight: 600;
+            font-size: 1.25rem;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--bg-tertiary);
+            border-top-color: var(--accent-research);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Task History */
+        .task-history {
+            margin-top: 2rem;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .task-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .task-query {
+            flex: 1;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .task-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">🔬</div>
+                <h1>Research Orchestrator</h1>
+            </div>
+            <p class="subtitle">Multi-Agent AI System for Comprehensive Research</p>
+            
+            <div class="agent-pills">
+                <div class="agent-pill supervisor">
+                    <span class="dot"></span>
+                    Supervisor
+                </div>
+                <div class="agent-pill research">
+                    <span class="dot"></span>
+                    Research
+                </div>
+                <div class="agent-pill analysis">
+                    <span class="dot"></span>
+                    Analysis
+                </div>
+                <div class="agent-pill critic">
+                    <span class="dot"></span>
+                    Critic
+                </div>
+            </div>
+        </header>
+
+        <div class="main-grid">
+            <!-- Left Panel: Input & Pipeline -->
+            <div class="left-panel">
+                <div class="card input-section">
+                    <div class="card-header">
+                        <span class="card-title">
+                            🎯 Research Query
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="search-box">
+                            <textarea 
+                                id="queryInput" 
+                                class="search-input" 
+                                placeholder="Enter your research question...&#10;&#10;Example: What are the latest developments in quantum computing and their potential impact on cryptography?"
+                            ></textarea>
+                            <button id="searchBtn" class="search-btn">
+                                Research
+                            </button>
+                        </div>
+                        
+                        <div class="options-row">
+                            <div class="option-group">
+                                <span class="option-label">Execution:</span>
+                                <select id="executionMode">
+                                    <option value="sequential">Sequential</option>
+                                    <option value="parallel">Parallel</option>
+                                </select>
+                            </div>
+                            <div class="option-group">
+                                <span class="option-label">Human Review:</span>
+                                <div id="humanReviewToggle" class="toggle"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">
+                            ⚡ Agent Pipeline
+                        </span>
+                        <span id="pipelineStatus" class="step-status">Ready</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="pipeline">
+                            <div class="pipeline-step" id="step-supervisor">
+                                <div class="step-icon supervisor">📋</div>
+                                <div class="step-content">
+                                    <div class="step-title">Supervisor Agent</div>
+                                    <div class="step-desc">Orchestrating workflow & routing tasks</div>
+                                </div>
+                                <span class="step-status" id="status-supervisor">Pending</span>
+                            </div>
+                            
+                            <div class="pipeline-step" id="step-research">
+                                <div class="step-icon research">🔍</div>
+                                <div class="step-content">
+                                    <div class="step-title">Research Agent</div>
+                                    <div class="step-desc">Web search & source gathering</div>
+                                </div>
+                                <span class="step-status" id="status-research">Pending</span>
+                            </div>
+                            
+                            <div class="pipeline-step" id="step-analysis">
+                                <div class="step-icon analysis">📊</div>
+                                <div class="step-content">
+                                    <div class="step-title">Analysis Agent</div>
+                                    <div class="step-desc">Summarization & pattern extraction</div>
+                                </div>
+                                <span class="step-status" id="status-analysis">Pending</span>
+                            </div>
+                            
+                            <div class="pipeline-step" id="step-critic">
+                                <div class="step-icon critic">⚖️</div>
+                                <div class="step-content">
+                                    <div class="step-title">Critic Agent</div>
+                                    <div class="step-desc">Fact-checking & confidence scoring</div>
+                                </div>
+                                <span class="step-status" id="status-critic">Pending</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Results -->
+            <div class="card results-panel">
+                <div class="card-header">
+                    <span class="card-title">
+                        📄 Research Results
+                    </span>
+                    <span id="executionTime" class="step-status" style="display: none;"></span>
+                </div>
+                <div class="card-body" id="resultsBody">
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-icon">🔬</div>
+                        <p>Enter a research query to get started</p>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">
+                            The multi-agent system will search, analyze, and fact-check your topic
+                        </p>
+                    </div>
+                    
+                    <div id="resultsContent" style="display: none;">
+                        <div class="confidence-meter" id="confidenceMeter">
+                            <span>Confidence Score:</span>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" id="confidenceFill"></div>
+                            </div>
+                            <span class="confidence-value" id="confidenceValue">--</span>
+                        </div>
+                        
+                        <div class="result-content" id="resultText"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task History -->
+        <div class="task-history">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📚 Recent Tasks</span>
+                </div>
+                <div class="card-body" id="taskHistory">
+                    <div class="empty-state" style="padding: 2rem;">
+                        <p style="color: var(--text-muted);">No tasks yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        
+        // State
+        let currentTaskId = null;
+        let pollingInterval = null;
+        let humanReviewEnabled = false;
+        const taskHistory = [];
+
+        // Elements
+        const queryInput = document.getElementById('queryInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const executionMode = document.getElementById('executionMode');
+        const humanReviewToggle = document.getElementById('humanReviewToggle');
+        const resultsBody = document.getElementById('resultsBody');
+        const emptyState = document.getElementById('emptyState');
+        const resultsContent = document.getElementById('resultsContent');
+        const resultText = document.getElementById('resultText');
+        const confidenceFill = document.getElementById('confidenceFill');
+        const confidenceValue = document.getElementById('confidenceValue');
+        const executionTime = document.getElementById('executionTime');
+        const pipelineStatus = document.getElementById('pipelineStatus');
+        const taskHistoryEl = document.getElementById('taskHistory');
+
+        // Toggle human review
+        humanReviewToggle.addEventListener('click', () => {
+            humanReviewEnabled = !humanReviewEnabled;
+            humanReviewToggle.classList.toggle('active', humanReviewEnabled);
+        });
+
+        // Submit research query
+        searchBtn.addEventListener('click', submitQuery);
+        queryInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                submitQuery();
+            }
+        });
+
+        async function submitQuery() {
+            const query = queryInput.value.trim();
+            if (!query) return;
+
+            searchBtn.disabled = true;
+            searchBtn.innerHTML = '<div class="spinner"></div>';
+            resetPipeline();
+            showResults();
+
+            try {
+                const response = await fetch(`${API_BASE}/research`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query,
+                        execution_mode: executionMode.value,
+                        require_human_approval: humanReviewEnabled
+                    })
+                });
+
+                const data = await response.json();
+                currentTaskId = data.task_id;
+                
+                // Start polling for status
+                startPolling();
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Failed to connect to the API. Make sure the server is running.');
+                searchBtn.disabled = false;
+                searchBtn.innerHTML = 'Research';
+            }
+        }
+
+        function startPolling() {
+            pipelineStatus.textContent = 'Running';
+            pipelineStatus.className = 'step-status running';
+            updateStepStatus('supervisor', 'running');
+
+            pollingInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/research/${currentTaskId}/status`);
+                    const data = await response.json();
+
+                    updatePipelineFromProgress(data.progress);
+
+                    if (data.status === 'completed') {
+                        stopPolling();
+                        showResult(data.result);
+                        addToHistory(data);
+                    } else if (data.status === 'failed') {
+                        stopPolling();
+                        showError(data.result?.error || 'Task failed');
+                    }
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+            }, 1000);
+        }
+
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+            searchBtn.disabled = false;
+            searchBtn.innerHTML = 'Research';
+        }
+
+        function updatePipelineFromProgress(progress) {
+            if (!progress) return;
+
+            // Map progress to steps
+            const stepMapping = {
+                research: 'research',
+                analysis: 'analysis',
+                critique: 'critic'
+            };
+
+            // Update supervisor based on overall progress
+            const allPending = Object.values(progress).every(s => s === 'pending');
+            const anyRunning = Object.values(progress).some(s => s === 'running');
+            const allCompleted = Object.values(progress).every(s => s === 'completed');
+
+            if (allCompleted) {
+                updateStepStatus('supervisor', 'completed');
+                pipelineStatus.textContent = 'Complete';
+                pipelineStatus.className = 'step-status completed';
+            } else if (anyRunning || !allPending) {
+                updateStepStatus('supervisor', 'running');
+            }
+
+            // Update individual steps
+            for (const [key, step] of Object.entries(stepMapping)) {
+                if (progress[key]) {
+                    updateStepStatus(step, progress[key]);
+                }
+            }
+        }
+
+        function updateStepStatus(step, status) {
+            const stepEl = document.getElementById(`step-${step}`);
+            const statusEl = document.getElementById(`status-${step}`);
+            
+            if (!stepEl || !statusEl) return;
+
+            stepEl.className = 'pipeline-step';
+            statusEl.className = 'step-status';
+
+            switch(status) {
+                case 'running':
+                    stepEl.classList.add('active');
+                    statusEl.classList.add('running');
+                    statusEl.textContent = 'Running...';
+                    break;
+                case 'completed':
+                    stepEl.classList.add('completed');
+                    statusEl.classList.add('completed');
+                    statusEl.textContent = 'Complete';
+                    break;
+                case 'error':
+                case 'failed':
+                    stepEl.classList.add('error');
+                    statusEl.classList.add('error');
+                    statusEl.textContent = 'Failed';
+                    break;
+                default:
+                    statusEl.textContent = 'Pending';
+            }
+        }
+
+        function resetPipeline() {
+            ['supervisor', 'research', 'analysis', 'critic'].forEach(step => {
+                updateStepStatus(step, 'pending');
+            });
+            pipelineStatus.textContent = 'Ready';
+            pipelineStatus.className = 'step-status';
+        }
+
+        function showResults() {
+            emptyState.style.display = 'none';
+            resultsContent.style.display = 'block';
+            resultText.innerHTML = '<div style="text-align: center; padding: 2rem;"><div class="spinner" style="margin: 0 auto;"></div><p style="margin-top: 1rem; color: var(--text-muted);">Processing your research query...</p></div>';
+            confidenceFill.style.width = '0%';
+            confidenceValue.textContent = '--';
+            executionTime.style.display = 'none';
+        }
+
+        function showResult(result) {
+            if (!result || !result.success) {
+                showError(result?.error || 'Unknown error');
+                return;
+            }
+
+            // Parse the result - handle nested JSON
+            let content = result.result;
+            let confidence = 0.5;
+            let execTime = result.execution_time_ms;
+            let parsed = null;
+
+            try {
+                // First parse the outer result
+                parsed = JSON.parse(content);
+                confidence = parsed.confidence_score || 0.5;
+                
+                // Check if summary itself contains JSON (from analysis agent)
+                if (parsed.summary && parsed.summary.startsWith('{')) {
+                    try {
+                        const innerParsed = JSON.parse(parsed.summary);
+                        // Merge inner parsed data with outer
+                        parsed = { ...parsed, ...innerParsed };
+                    } catch {}
+                }
+                
+                // Also try to clean up summary that starts with ```json
+                if (parsed.summary && parsed.summary.includes('```json')) {
+                    const jsonMatch = parsed.summary.match(/```json\s*([\s\S]*?)\s*```/);
+                    if (jsonMatch) {
+                        try {
+                            const innerParsed = JSON.parse(jsonMatch[1]);
+                            parsed = { ...parsed, ...innerParsed };
+                        } catch {}
+                    }
+                }
+                
+                // Format the result nicely
+                resultText.innerHTML = formatResult(parsed);
+            } catch {
+                // If parsing fails, show raw content
+                resultText.innerHTML = `<div class="result-section"><pre style="white-space: pre-wrap;">${escapeHtml(content)}</pre></div>`;
+            }
+
+            // Update confidence meter
+            updateConfidence(confidence);
+
+            // Show execution time
+            if (execTime) {
+                executionTime.textContent = `${(execTime / 1000).toFixed(1)}s`;
+                executionTime.style.display = 'inline';
+            }
+        }
+
+        function formatResult(data) {
+            let html = '';
+
+            // Summary
+            if (data.summary) {
+                let summary = data.summary;
+                // Clean up if it's JSON-like
+                if (summary.startsWith('{') || summary.startsWith('```')) {
+                    summary = "Research analysis complete. See details below.";
+                }
+                html += `<div class="result-section">
+                    <h3>📝 Summary</h3>
+                    <p style="line-height: 1.7;">${escapeHtml(summary)}</p>
+                </div>`;
+            }
+
+            // Key Points
+            if (data.key_points && data.key_points.length > 0) {
+                html += `<div class="result-section">
+                    <h3>🎯 Key Points</h3>
+                    <ul class="styled-list">
+                        ${data.key_points.map(p => `<li>${escapeHtml(p)}</li>`).join('')}
+                    </ul>
+                </div>`;
+            }
+
+            // Patterns (new)
+            if (data.patterns && data.patterns.length > 0) {
+                html += `<div class="result-section">
+                    <h3>🔍 Patterns Identified</h3>
+                    <div class="patterns-grid">
+                        ${data.patterns.map(p => `
+                            <div class="pattern-card">
+                                <strong>${escapeHtml(p.pattern || p)}</strong>
+                                ${p.significance ? `<p class="pattern-significance">${escapeHtml(p.significance)}</p>` : ''}
+                                ${p.evidence ? `<ul class="pattern-evidence">${p.evidence.map(e => `<li>${escapeHtml(e)}</li>`).join('')}</ul>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+
+            // Themes (new)
+            if (data.themes && data.themes.length > 0) {
+                html += `<div class="result-section">
+                    <h3>🏷️ Themes</h3>
+                    <div class="themes-container">
+                        ${data.themes.map(t => `<span class="theme-tag">${escapeHtml(t)}</span>`).join('')}
+                    </div>
+                </div>`;
+            }
+
+            // Data Points (new)
+            if (data.data_points && data.data_points.length > 0) {
+                html += `<div class="result-section">
+                    <h3>📊 Data Points</h3>
+                    <div class="data-points-grid">
+                        ${data.data_points.map(d => `
+                            <div class="data-point">
+                                <span class="data-metric">${escapeHtml(d.metric)}</span>
+                                <span class="data-value">${escapeHtml(d.value)}</span>
+                                ${d.source ? `<span class="data-source">${escapeHtml(d.source)}</span>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+
+            // Gaps (new)
+            if (data.gaps && data.gaps.length > 0) {
+                html += `<div class="result-section">
+                    <h3>🔎 Information Gaps</h3>
+                    <ul class="styled-list gaps-list">
+                        ${data.gaps.map(g => `<li>${escapeHtml(g)}</li>`).join('')}
+                    </ul>
+                </div>`;
+            }
+
+            // Recommendations (new)
+            if (data.recommendations && data.recommendations.length > 0) {
+                html += `<div class="result-section">
+                    <h3>💡 Recommendations</h3>
+                    <ul class="styled-list recommendations-list">
+                        ${data.recommendations.map(r => `<li>${escapeHtml(r)}</li>`).join('')}
+                    </ul>
+                </div>`;
+            }
+
+            // Contradictions
+            if (data.contradictions && data.contradictions.length > 0) {
+                html += `<div class="result-section">
+                    <h3>⚠️ Contradictions Found</h3>
+                    <ul class="styled-list" style="color: var(--warning);">
+                        ${data.contradictions.map(c => `<li>${escapeHtml(typeof c === 'string' ? c : c.nature || JSON.stringify(c))}</li>`).join('')}
+                    </ul>
+                </div>`;
+            }
+
+            // Limitations
+            if (data.limitations && data.limitations.length > 0) {
+                html += `<div class="result-section">
+                    <h3>📋 Limitations</h3>
+                    <ul class="styled-list" style="color: var(--text-secondary);">
+                        ${data.limitations.map(l => `<li>${escapeHtml(l)}</li>`).join('')}
+                    </ul>
+                </div>`;
+            }
+
+            // Citations/Sources
+            if (data.citations && data.citations.length > 0) {
+                html += `<div class="result-section">
+                    <h3>📚 Sources</h3>
+                    <div class="sources-list">
+                        ${data.citations.map(c => `
+                            <div class="source-item">
+                                <a href="${escapeHtml(c.url)}" target="_blank" rel="noopener">
+                                    ${escapeHtml(c.title)}
+                                </a>
+                                <span class="relevance-badge">${((c.relevance_score || 0) * 100).toFixed(0)}%</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+
+            // Agents Used
+            if (data.agents_used && data.agents_used.length > 0) {
+                html += `<div class="result-section agents-section">
+                    <h3>🤖 Agent Pipeline</h3>
+                    <div class="agents-flow">
+                        ${data.agents_used.map((a, i) => `
+                            <span class="agent-badge">${escapeHtml(a.split('-')[0])}</span>
+                            ${i < data.agents_used.length - 1 ? '<span class="flow-arrow">→</span>' : ''}
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+
+            return html || `<pre style="white-space: pre-wrap;">${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+        function updateConfidence(score) {
+            const percentage = Math.round(score * 100);
+            confidenceFill.style.width = `${percentage}%`;
+            confidenceValue.textContent = `${percentage}%`;
+
+            confidenceFill.className = 'confidence-fill';
+            if (score >= 0.7) {
+                confidenceFill.classList.add('high');
+            } else if (score >= 0.4) {
+                confidenceFill.classList.add('medium');
+            } else {
+                confidenceFill.classList.add('low');
+            }
+        }
+
+        function showError(message) {
+            resultText.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: var(--error);">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">❌</div>
+                    <p>${escapeHtml(message)}</p>
+                </div>
+            `;
+            pipelineStatus.textContent = 'Error';
+            pipelineStatus.className = 'step-status error';
+        }
+
+        function addToHistory(data) {
+            taskHistory.unshift({
+                id: currentTaskId,
+                query: data.query,
+                status: data.status,
+                timestamp: new Date().toLocaleTimeString()
+            });
+
+            renderHistory();
+        }
+
+        function renderHistory() {
+            if (taskHistory.length === 0) {
+                taskHistoryEl.innerHTML = '<div class="empty-state" style="padding: 2rem;"><p style="color: var(--text-muted);">No tasks yet</p></div>';
+                return;
+            }
+
+            taskHistoryEl.innerHTML = taskHistory.slice(0, 5).map(task => `
+                <div class="task-item" onclick="loadTask('${task.id}')">
+                    <span class="task-query">${escapeHtml(task.query)}</span>
+                    <div class="task-meta">
+                        <span class="step-status ${task.status === 'completed' ? 'completed' : ''}">${task.status}</span>
+                        <span>${task.timestamp}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadTask(taskId) {
+            try {
+                const response = await fetch(`${API_BASE}/research/${taskId}/result`);
+                const data = await response.json();
+                showResults();
+                showResult(data);
+            } catch (error) {
+                console.error('Error loading task:', error);
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Check API health on load
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                console.log('API Status:', data);
+            } catch (error) {
+                console.warn('API not available:', error.message);
+            }
+        }
+
+        checkHealth();
+    </script>
+</body>
+</html>
+
